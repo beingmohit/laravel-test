@@ -93,8 +93,32 @@ class MenuController extends BaseController
         }
     ]
      */
-
+    
     public function getMenuItems() {
-        throw new \Exception('implement in coding task 3');
+        $menus = MenuItem::get();
+
+        $source = [];
+
+        foreach($menus as $menu)
+            $source[$menu->id] = $menu->toArray();
+
+        $nested = [];
+
+	    foreach ($source as &$s) {
+            if (is_null($s['parent_id'])) {
+                $nested[] = &$s;
+            } else {
+                $pid = $s['parent_id'];
+
+                if ( isset($source[$pid]) ) {
+                    if ( !isset($source[$pid]['children']) ) 
+                        $source[$pid]['children'] = [];
+                    
+                    $source[$pid]['children'][] = &$s;
+                }
+            }
+        }
+
+	    return $nested;
     }
 }
