@@ -95,30 +95,18 @@ class MenuController extends BaseController
      */
     
     public function getMenuItems() {
-        $menus = MenuItem::get();
+        $items = MenuItem::orderBy('parent_id', 'asc')->get()->keyBy('id')->toArray();
 
-        $source = [];
-
-        foreach($menus as $menu)
-            $source[$menu->id] = $menu->toArray();
-
-        $nested = [];
-
-	    foreach ($source as &$s) {
-            if (is_null($s['parent_id'])) {
-                $nested[] = &$s;
-            } else {
-                $pid = $s['parent_id'];
-
-                if ( isset($source[$pid]) ) {
-                    if ( !isset($source[$pid]['children']) ) 
-                        $source[$pid]['children'] = [];
-                    
-                    $source[$pid]['children'][] = &$s;
-                }
+        $result = [];
+        
+	    foreach ($items as &$item) {
+            if (is_null($item['parent_id'])) {
+                $result[] = &$item;
+            } else if ( isset($items[$item['parent_id']])) {
+                $items[$item['parent_id']]['children'][] = &$item;
             }
         }
 
-	    return $nested;
+	    return $result;
     }
 }
